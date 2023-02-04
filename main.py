@@ -57,7 +57,7 @@ def add_user(instagram:InstagramSchema):
     return {'cookie':cookie}
 
 # get followers list
-@app.get("/instagram/{usr}",tags=['instagram'])
+@app.get("/instagram/follower/{usr}",tags=['instagram'])
 def list_followers(usr:str):
     cookie = serializeList(conn.local.cookies.find().sort('_id',-1).limit(1))[0]
     del cookie['_id']
