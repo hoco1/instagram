@@ -180,3 +180,8 @@ def list_following(usr:str):
             conn.local.following.insert_one({'userName':user['username'],'full_name':user['full_name'],'is_private':user['is_private'],'which_account':usr})      
     return serializeList(conn.local.following.find().sort('_id',-1).limit(15))  
 
+# user Signup [Create a new user]
+@app.post("/user/signup",tags=["user"])
+def user_signup(user:UserSchema=Body(default=None)):
+    conn.local.users.insert_one(dict(user))
+    return serializeList(conn.local.users.find())
