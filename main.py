@@ -83,7 +83,7 @@ def list_followers(usr:str):
         #'X-IG-WWW-Claim': 'hmac.AR2t23cd-PLsVw8GByCHBcLMYfsKEk5T9x80YB-dnKMcZOPw',
         'X-Requested-With': 'XMLHttpRequest',
         'Connection': 'keep-alive',
-        'Referer': 'https://www.instagram.com/ataullah1385/',
+        'Referer': f'https://www.instagram.com/{usr}/',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
@@ -92,7 +92,7 @@ def list_followers(usr:str):
     }
 
     params_info = (
-        ('username', 'ataullah1385'),
+        ('username', usr),
     )
 
     response = requests.get('https://www.instagram.com/api/v1/users/web_profile_info/', headers=headers, params=params_info, cookies=cookies)
