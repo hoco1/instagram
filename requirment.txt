@@ -1,0 +1,9 @@
+black
+requests
+
+fastapi
+uvicorn
+pymongo
+PyJWT
+pydantic[email]
+python-decouple
