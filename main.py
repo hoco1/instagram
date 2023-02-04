@@ -119,5 +119,64 @@ def list_followers(usr:str):
     return serializeList(conn.local.followers.find().sort('_id',-1).limit(15))
     
     
+# get following list
+@app.get("/instagram/following/{usr}",tags=['instagram'])
+def list_following(usr:str):
+    cookie = serializeList(conn.local.cookies.find().sort('_id',-1).limit(1))[0]
+    del cookie['_id']
     
+    cookies = {
+        'ig_did': cookie['ig_did'],
+        'mid': cookie['mid'],
+        'rur': cookie['rur'],
+        'csrftoken': cookie['csrftoken'],
+        'ds_user_id': cookie['ds_user_id'],
+        'sessionid': cookie['sessionid'],
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'X-CSRFToken': cookie['csrftoken'],
+        # Static, and I don't know what it is yet (X-IG-App-ID,X-ASBD-ID) beside it is crucial
+        'X-IG-App-ID': '936619743392459',
+        'X-ASBD-ID': '198387',
+        #'X-IG-WWW-Claim': 'hmac.AR2t23cd-PLsVw8GByCHBcLMYfsKEk5T9x80YB-dnKMcZOPw',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Connection': 'keep-alive',
+        'Referer': f'https://www.instagram.com/{usr}/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-GPC': '1',
+        'TE': 'trailers',
+    }
+
+    params_info = (
+        ('username', usr),
+    )
+
+    response = requests.get('https://www.instagram.com/api/v1/users/web_profile_info/', headers=headers, params=params_info, cookies=cookies)
+    
+    print(response)
+    
+    data = json.loads(response.text)
+    usr_id = data['data']['user']['id']
+    print(usr_id)
+    
+    headers['Referer'] = f'https://www.instagram.com/{usr}/following/'
+    
+    params_following = {
+    'max_id': '100',
+    }
+    
+    for i in range(3):
+        response = requests.get(f'https://www.instagram.com/api/v1/friendships/{usr_id}/following/', headers=headers, params=params_following, cookies=cookies)
+        print('following : ',response)
+        following_data = json.loads(response.text)
+        for user in following_data['users']:
+            conn.local.following.insert_one({'userName':user['username'],'full_name':user['full_name'],'is_private':user['is_private'],'which_account':usr})      
+    return serializeList(conn.local.following.find().sort('_id',-1).limit(15))  
 
