@@ -8,6 +8,8 @@ from app.schemas import serializeDict,serializeList
 import requests
 from datetime import datetime
 import json
+# authentication
+from app.auth.jwt_handler import signJWT
 
 app = FastAPI()
 # GET - introduction
@@ -185,3 +187,27 @@ def list_following(usr:str):
 def user_signup(user:UserSchema=Body(default=None)):
     conn.local.users.insert_one(dict(user))
     return serializeList(conn.local.users.find())
+
+# Checking for logging
+
+def check_user(data:UserLoginSchema):
+    db_user = conn.local.users.find_one({"email":data.email.lower()})
+    
+    if not db_user:
+        return False
+    
+    user = serializeDict(db_user)
+    
+    if not user["password"] == data.password:
+        return False
+    
+    return True
+
+@app.post("/user/login",tags=["user"])
+def user_login(user:UserLoginSchema=Body(default=None)):
+    if check_user(user):
+        return signJWT(user.email)
+    else:
+        return{
+            "error":"Invalid login details!"
+        }
