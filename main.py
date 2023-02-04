@@ -100,7 +100,23 @@ def list_followers(usr:str):
     print(response)
     
     data = json.loads(response.text)
-    print(data['data']['user']['id'])
+    usr_id = data['data']['user']['id']
+    print(usr_id)
+    
+    headers['Referer'] = f'https://www.instagram.com/{usr}/followers/'
+    
+    params_follower = {
+    'max_id': '100',
+    'search_surface': 'follow_list_page',
+    }
+    
+    for i in range(3):
+        response = requests.get(f'https://www.instagram.com/api/v1/friendships/{usr_id}/followers/', headers=headers, params=params_follower, cookies=cookies)
+        print('follower : ',response)
+        follower_data = json.loads(response.text)
+        for user in follower_data['users']:
+            conn.local.followers.insert_one({'userName':user['username'],'full_name':user['full_name'],'is_private':user['is_private'],'which_account':usr})      
+    return serializeList(conn.local.followers.find().sort('_id',-1).limit(15))
     
     
     
