@@ -10,6 +10,7 @@ from datetime import datetime
 import json
 # authentication
 from app.auth.jwt_handler import signJWT
+from app.auth.jwt_bearer import jwtBearer
 
 app = FastAPI()
 # GET - introduction
@@ -18,7 +19,7 @@ def introduction():
     return {"Instagram Scraping"}
 
 # save (user , pass) , cookies
-@app.post('/instagram',tags=['instagram'])
+@app.post('/instagram',dependencies=[Depends(jwtBearer())],tags=['instagram'])
 def add_user(instagram:InstagramSchema):
     
     url = 'https://www.instagram.com/data/shared_data/'
@@ -59,7 +60,7 @@ def add_user(instagram:InstagramSchema):
     return {'cookie':cookie}
 
 # get followers list
-@app.get("/instagram/follower/{usr}",tags=['instagram'])
+@app.get("/instagram/follower/{usr}",dependencies=[Depends(jwtBearer())],tags=['instagram'])
 def list_followers(usr:str):
     cookie = serializeList(conn.local.cookies.find().sort('_id',-1).limit(1))[0]
     del cookie['_id']
@@ -122,7 +123,7 @@ def list_followers(usr:str):
     
     
 # get following list
-@app.get("/instagram/following/{usr}",tags=['instagram'])
+@app.get("/instagram/following/{usr}",dependencies=[Depends(jwtBearer())],tags=['instagram'])
 def list_following(usr:str):
     cookie = serializeList(conn.local.cookies.find().sort('_id',-1).limit(1))[0]
     del cookie['_id']
@@ -189,7 +190,6 @@ def user_signup(user:UserSchema=Body(default=None)):
     return serializeList(conn.local.users.find())
 
 # Checking for logging
-
 def check_user(data:UserLoginSchema):
     db_user = conn.local.users.find_one({"email":data.email.lower()})
     
