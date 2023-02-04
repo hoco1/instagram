@@ -29,29 +29,30 @@ def add_user(instagram:InstagramSchema):
 
     csrf = json.loads(response.text)['config']['csrf_token']
 
-    username = 'fpepby'
-    password = '58598311mM'
+    username = instagram.instagramID
+    password = instagram.instagramPass
 
     payload = {
         'username': username,
         'enc_password': f'#PWD_INSTAGRAM_BROWSER:0:{time}:{password}',
-        'queryParams': {},
-        'optIntoOneTap': 'false'
+        'optIntoOneTap': 'false',
     }
 
     login_header = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
-        "X-Requested-With": "XMLHttpRequest",
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'X-CSRFToken':csrf,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Connection': 'keep-alive',
         "Referer": "https://www.instagram.com/accounts/login/",
-        "x-csrftoken": csrf
     }
     
     response = requests.post(login_url,data=payload,headers=login_header)
-    print(response.status_code)
     cookie = response.cookies.get_dict()
     
     conn.local.accounts.insert_one({'usr':username,'pwd':password})
-    conn.local.cookies.insert_one(cookie)
+    conn.local.cookies.insert_one(dict(cookie))
     
     return {'cookie':cookie}
 
